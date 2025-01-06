@@ -8,11 +8,13 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import paths from "@/paths";
 
+//validate form data using zod. createPostSchema is a schema that defines the shape of the data that we expect to receive from the form
 const createPostSchema = z.object({
   title: z.string().min(3),
   content: z.string().min(10),
 });
 
+//for frontend to show the errors
 interface CreatePostFormState {
   errors: {
     title?: string[];
@@ -26,17 +28,21 @@ export async function createPost(
   formState: CreatePostFormState,
   formData: FormData
 ): Promise<CreatePostFormState> {
+
+  //applying the schema to the submitted form data
   const result = createPostSchema.safeParse({
     title: formData.get("title"),
     content: formData.get("content"),
   });
 
+  //if the validation fails, return the errors
   if (!result.success) {
     return {
       errors: result.error.flatten().fieldErrors,
-    };
+    }; 
   }
 
+  //if the user is not signed in, return an error
   const session = await auth();
   if (!session || !session.user) {
     return {
@@ -46,11 +52,12 @@ export async function createPost(
     };
   }
 
-  //getting id of the slug
+  //getting id of the topic
   const topic = await db.topic.findFirst({
     where: { slug },
   });
 
+  //if the topic is not found, return an error
   if (!topic) {
     return {
       errors: {

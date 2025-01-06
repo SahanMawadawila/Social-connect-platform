@@ -60,7 +60,7 @@ model Topic {
   description String
   posts       Post[]
 
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now())  //this is automatically set to the current date and time when a new record is created.it is managed by prisma
   updatedAt DateTime @updatedAt
 }
 
@@ -74,23 +74,23 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  topic    Topic     @relation(fields: [topicId], references: [id])
-  comments Comment[]
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade) //indicate the relationship 
+  topic    Topic     @relation(fields: [topicId], references: [id]) //topic is the relation to Topic table. this topic, used in sql join statements with prisma
+  comments Comment[] //indicate many to many relationship
 }
 
 model Comment {
-  id       String  @id @default(cuid())
+  id       String  @id @default(cuid()) //The cuid() function generates collision-resistant IDs, ensuring uniqueness.
   content  String
   postId   String
   userId   String
-  parentId String?
+  parentId String?  //if have any parent put parent ID. if not put null
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt //this is automatically set to the current date and time when a record is updated. it is managed by prisma
 
   parent   Comment?  @relation("Comments", fields: [parentId], references: [id], onDelete: Cascade)
   post     Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  children Comment[] @relation("Comments")
+  children Comment[] @relation("Comments") //self-referencing relationship. it indicates that a comment can have many children. 
 }
